@@ -16,27 +16,29 @@ object SzxcvbnBuild extends Build {
   )
 
   val buildSettings = Defaults.defaultSettings ++ Seq (
-    scalaVersion := "2.9.1",
-    organization := "szxcvbn",
-    version      := "0.1-SNAPSHOT"
+    organization := "eu.tekul",
+    scalaVersion := "2.9.2",
+    version      := "0.1-SNAPSHOT",
+    crossScalaVersions := Seq("2.8.2", "2.9.2")
   )
 
-  lazy val szxcvbn = Project("szxcvbn", 
+  lazy val szxcvbn = Project("root",
     file("."), 
-    settings = buildSettings
+    settings = buildSettings ++ Seq(publishArtifact := false)
   ) aggregate (core, server)
 
-  lazy val core = Project("core", 
+  lazy val core = Project("szxcvbn",
     file("core"), settings = buildSettings  ++ Seq(
       libraryDependencies += scalaTest,
       exportJars := true
-    )
+    ) ++ Publish.settings
   )
   
-  lazy val server = Project("szxcvbn-server",
+  lazy val server = Project("server",
     file("server"), 
     settings = buildSettings ++ GitProject.gitSettings ++ PackageDist.newSettings ++ Seq(
       mainClass in Compile := Some("SzxcvbnServer"),
+      publishArtifact := false,
       packageDistZipName := "szxcvbn-server.zip",
       libraryDependencies ++= uf,
       packageDistCopy ~= {
