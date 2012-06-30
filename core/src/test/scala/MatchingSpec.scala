@@ -123,7 +123,7 @@ class MatchingSpec extends FunSpec with GivenWhenThen {
     it ("should match spatial sequences of length 3 or greater") {
 
       given("a 'qwerty' spatial matcher")
-      val m = SpatialMatcher("qwerty", AdjacencyLists.qwerty)
+      val m = SpatialMatcher(Data.adjacencyGraphs(0))
 
       when("it tests the string 'qwzxcvbnok'")
       var matches = m.matches("qwzxcvbnok")
@@ -149,7 +149,7 @@ class MatchingSpec extends FunSpec with GivenWhenThen {
     it ("should match sequences containing multiple turns") {
       given("a 'qwerty' spatial matcher")
 
-      val m = SpatialMatcher("qwerty", AdjacencyLists.qwerty)
+      val m = SpatialMatcher(Data.adjacencyGraphs(0))
 
       when("it tests the string 'dfghyt56'")
       var matches = m.matches("dfghyt56")

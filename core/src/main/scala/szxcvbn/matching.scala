@@ -16,7 +16,7 @@ sealed trait Match {
   def end: Int
 
   /**
-   * The matched token
+   * The matched token, a substring of the password.
    */
   def token: String
 
@@ -70,9 +70,8 @@ final case class BruteForceMatch(start: Int, end: Int, token: String, cardinalit
   val entropy = log2(pow(cardinality, end - start + 1))
 }
 
-final case class SpatialMatch(start: Int, end: Int, token: String, name: String, turns: Int, shiftedCount: Int) extends Match {
+final case class SpatialMatch(start: Int, end: Int, token: String, name: String, entropy: Double, turns: Int, shiftedCount: Int) extends Match {
   val pattern = "spatial"
-  val entropy = 0.0
 }
 
 trait Matcher[+A <: Match] {
@@ -101,9 +100,9 @@ final case class DictMatcher(name: String, wordList: Seq[String]) extends Matche
 }
 
 object RepeatMatcher extends Matcher[RepeatMatch] {
-  def matches(password: String) = findMatches(password, password.length-1, Nil)
+  def matches(password: String) = findMatches(password, password.length-1)
 
-  private def findMatches(passwd: String, to: Int, matches: List[RepeatMatch]): List[RepeatMatch] =
+  private def findMatches(passwd: String, to: Int, matches: List[RepeatMatch] = Nil): List[RepeatMatch] =
     if (to > 0) {
       val from = extendRepeat(passwd(to), passwd, to)
 
@@ -121,9 +120,9 @@ object RepeatMatcher extends Matcher[RepeatMatch] {
 }
 
 final case class SequenceMatcher(namedSequences: List[(String,String)]) extends Matcher[SequenceMatch] {
-  def matches(passwd: String) = findMatches(passwd, passwd.length - 1, Nil)
+  def matches(passwd: String) = findMatches(passwd, passwd.length - 1)
 
-  private def findMatches(passwd: String, to: Int, matches: List[SequenceMatch]): List[SequenceMatch] =
+  private def findMatches(passwd: String, to: Int, matches: List[SequenceMatch] = Nil): List[SequenceMatch] =
     if (to > 0)
       findCandidateSequence(passwd(to-1), passwd(to), namedSequences) match {
         case Some((name, sequence, direction)) =>
@@ -183,19 +182,22 @@ final case class SequenceMatcher(namedSequences: List[(String,String)]) extends 
   }
 }
 
-final case class SpatialMatcher(name: String, adjacencyGraph: Map[Char, Seq[String]]) extends Matcher[SpatialMatch] {
-  private val MinSeqLength = 3
+final case class SpatialMatcher(graph: AdjacencyGraph) extends Matcher[SpatialMatch] {
 
-  def matches(passwd: String) = findMatches(passwd, passwd.length - 1, Nil)
+  def matches(passwd: String) = findMatches(passwd, passwd.length - 1)
 
-  private def findMatches(passwd: String, to: Int, matches: List[SpatialMatch]): List[SpatialMatch] =
+  private def findMatches(passwd: String, to: Int, matches: List[SpatialMatch] = Nil): List[SpatialMatch] =
     if (to > 0) {
-      val (from, turns, shiftedCount) = walkAdjacents(to, 0, 1, 0, passwd)
+      val (from, turns, nShifted) = walkAdjacents(passwd, to)
 
       findMatches(passwd,
                   from - 1,
-                  if (okLength(from, to))
-                    SpatialMatch(from, to, passwd.slice(from, to+1), name, turns, shiftedCount) :: matches
+                  if (okLength(from, to)) {
+                    // Walk doesn't check whether start pos is shifted
+                    val totalShifted = if (graph.adjacentMatch(passwd(to-1),passwd(to)).get._2) nShifted + 1  else nShifted
+                    val token = passwd.slice(from, to+1)
+                    SpatialMatch(from, to, token, graph.name, graph.entropy(token.length, turns, totalShifted), turns, totalShifted) :: matches
+                  }
                   else matches)
 
     }
@@ -204,37 +206,15 @@ final case class SpatialMatcher(name: String, adjacencyGraph: Map[Char, Seq[Stri
   /**
    * Walk back from the current position and continue while an adjacency match is found for the current character.
    */
-  private def walkAdjacents(pos: Int, currentDirection: Int, turns: Int, shiftedCount: Int, password: String): (Int, Int, Int) =
-    adjacentMatch(pos, password) match {
-      case None =>
-        (pos, turns, shiftedCount)
-      case Some((direction, shifted)) =>
-        walkAdjacents(pos - 1, direction, turns + (if (direction != currentDirection) 1 else 0), shiftedCount + (if (shifted) 1 else 0), password)
-    }
-
-  private def adjacentMatch(pos: Int, password: String): Option[(Int,Boolean)] = {
+  private def walkAdjacents(password: String, pos: Int, currentDirection: Int = -Int.MaxValue, turns: Int = 0, shiftedCount: Int = 0): (Int, Int, Int) =
     if (pos > 0)
-      adjacencyGraph.get(password(pos)) match {
-        case None => None
-        case Some(aseq) =>
-          findAdjacent(password(pos-1), aseq, 0)
+      graph.adjacentMatch(password(pos), password(pos-1)) match {
+        case None =>
+          (pos, turns, shiftedCount)
+        case Some((direction, shifted)) =>
+          walkAdjacents(password, pos - 1, direction, turns + (if (direction != currentDirection) 1 else 0), shiftedCount + (if (shifted) 1 else 0))
       }
-    else None
-  }
-
-  private def findAdjacent(c: Char, adjacents: Seq[String], direction: Int): Option[(Int,Boolean)] =
-    if (direction == 6)
-      None
-    else
-      adjacents(direction) match {
-        case null =>
-          findAdjacent(c, adjacents, direction + 1)
-        case a =>
-          a.indexOf(c) match {
-            case -1 => findAdjacent(c, adjacents, direction + 1)
-            case i => Some(direction, i == 1)
-          }
-      }
+    else (pos, turns, shiftedCount)
 }
 
 

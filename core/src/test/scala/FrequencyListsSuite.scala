@@ -1,6 +1,6 @@
 import org.scalatest.FunSuite
 
-import szxcvbn.FrequencyLists._
+import szxcvbn.Data._
 
 
 class FrequencyListsSuite extends FunSuite {

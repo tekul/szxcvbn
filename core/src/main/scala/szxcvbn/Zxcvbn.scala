@@ -25,7 +25,7 @@ object Zxcvbn {
       case None => doMatch(password, defaultMatchers)
     }).sortWith((m1,m2) => m1 < m2)
 
-  private def doMatch(word: String, matchers: List[Matcher[Match]]): List[Match] = matchers match {
+  private def doMatch(word: String, matchers: MatcherList): List[Match] = matchers match {
     case List(m) => m.matches(word)
     case m :: ms => m.matches(word) ::: doMatch(word, ms)
     case Nil     => Nil
@@ -101,7 +101,7 @@ object Zxcvbn {
   val SingleGuessTimeMs = 10
   val NumAttackers = 100
 
-  import FrequencyLists._
+  import Data._
 
   val dictMatchers = List(
     DictMatcher("passwords", passwords),
@@ -115,7 +115,7 @@ object Zxcvbn {
     L33tMatcher(dictMatchers),
     RepeatMatcher,
     SequenceMatcher(StandardSequences)
-  )
+  ) ::: adjacencyGraphs.map(SpatialMatcher(_))
 
   def entropyToCrackTime(entropy: Double): Double = (math.pow(2, entropy) / (2 * NumAttackers * 1000)) * SingleGuessTimeMs
 }
