@@ -18,7 +18,7 @@ object SzxcvbnBuild extends Build {
   val buildSettings = Defaults.defaultSettings ++ Seq (
     organization := "eu.tekul",
     scalaVersion := "2.9.2",
-    version      := "0.1",
+    version      := "0.2-SNAPSHOT",
     crossScalaVersions := Seq("2.8.2", "2.9.2")
   )
 
