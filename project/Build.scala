@@ -1,8 +1,8 @@
 import sbt._
 import Keys._
 
-import com.twitter.sbt._
-import PackageDist._
+//import com.twitter.sbt._
+//import PackageDist._
 
 object SzxcvbnBuild extends Build {
 
@@ -30,20 +30,24 @@ object SzxcvbnBuild extends Build {
   lazy val core = Project("szxcvbn",
     file("core"), settings = buildSettings  ++ Seq(
       libraryDependencies += scalaTest,
+      compileOrder := CompileOrder.ScalaThenJava,
       exportJars := true
     ) ++ Publish.settings
   )
+
+//  val packageDistSettings = GitProject.gitSettings ++ PackageDist.newSettings ++ Seq(
+//    packageDistZipName := "szxcvbn-server.zip",
+//    packageDistCopy ~= {
+//      files => files.filter(f => !f.getName.contains("-javadoc") && !f.getName.contains("-sources") && !f.getName.startsWith("scala-compiler"))
+//    }
+//  )
   
   lazy val server = Project("server",
     file("server"), 
-    settings = buildSettings ++ GitProject.gitSettings ++ PackageDist.newSettings ++ Seq(
+    settings = buildSettings ++  Seq(
       mainClass in Compile := Some("SzxcvbnServer"),
       publishArtifact := false,
-      packageDistZipName := "szxcvbn-server.zip",
-      libraryDependencies ++= uf,
-      packageDistCopy ~= {
-        files => files.filter(f => !f.getName.contains("-javadoc") && !f.getName.contains("-sources") && !f.getName.startsWith("scala-compiler"))
-      }
-    )
+      libraryDependencies ++= uf
+    ) //++ packageDistSettings
   ) dependsOn(core)
 }
