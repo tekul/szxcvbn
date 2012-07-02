@@ -118,6 +118,13 @@ object Zxcvbn {
   ) ::: adjacencyGraphs.map(SpatialMatcher(_))
 
   def entropyToCrackTime(entropy: Double): Double = (math.pow(2, entropy) / (2 * NumAttackers * 1000)) * SingleGuessTimeMs
+
+  private val ScoreIntervals: Seq[Double] = (1 to 10) map (10 * math.pow(10,_))
+
+  def crackTimeToScore(t: Double) = ScoreIntervals.indexWhere(_ > t) match {
+    case -1 => 10 // We have a HUGE crack-time, so give it maximum score
+    case  s => s
+  }
 }
 
 
@@ -128,18 +135,7 @@ private class ZxcvbnImpl(val password: String, val entropy: Double, val matches:
   // .5 * Math.pow(2, entropy) * SECONDS_PER_GUESS
   val crackTime: Double = entropyToCrackTime(entropy)
 
-  val score =
-    if (crackTime < 100)
-      0
-    else if (crackTime < 10000)
-      1
-    else if (crackTime < 1000000)
-      2
-    else if (crackTime < 100000000)
-      3
-    else
-      4
+  val score = crackTimeToScore(crackTime)
 
   val crackTimeDisplay = displayTime(crackTime)
-
 }

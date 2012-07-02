@@ -35,7 +35,7 @@ object Predef {
   val Day = 24 * Hour
   val Month = 31 * Day
   val Year = 12 * Month
-  val Century = 100 * Year
+  val Century = 100L * Year
 
   def displayTime(seconds: Double) =
     if (seconds < Minute)

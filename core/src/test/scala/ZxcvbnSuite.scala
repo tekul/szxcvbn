@@ -15,6 +15,23 @@ class ZxcvbnSuite extends FunSuite with ShouldMatchers {
     entropyToCrackTime(70) should be (59029581035870570.0 plusOrMinus(0.5))
   }
 
+  test ("Crack time to score conversion is accurate") {
+    crackTimeToScore(0.0) should be (0)
+    crackTimeToScore(99.9) should be (0)
+    crackTimeToScore(100.1) should be (1)
+    crackTimeToScore(999.0) should be (1)
+    crackTimeToScore(1000.1) should be (2)
+    crackTimeToScore(10000.1) should be (3)
+    crackTimeToScore(100000.1) should be (4)
+    crackTimeToScore(1000000.1) should be (5)
+    crackTimeToScore(10000000.1) should be (6)
+    crackTimeToScore(100000000.1) should be (7)
+    crackTimeToScore(1000000000.1) should be (8)
+    crackTimeToScore(10000000000.1) should be (9)
+    crackTimeToScore(100000000000.1) should be (10)
+    crackTimeToScore(1000000000000.1) should be (10)
+  }
+
   test("Passwords matching [a-zA-Z]* produce expected entropy") {
     var z = Zxcvbn("password")
 
