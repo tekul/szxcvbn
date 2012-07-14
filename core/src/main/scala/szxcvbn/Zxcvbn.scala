@@ -114,6 +114,8 @@ object Zxcvbn {
   val defaultMatchers: MatcherList = dictMatchers ::: List(
     L33tMatcher(dictMatchers),
     RepeatMatcher,
+    DigitsMatcher,
+    DateMatcher,
     SequenceMatcher(StandardSequences)
   ) ::: adjacencyGraphs.map(SpatialMatcher(_))
 

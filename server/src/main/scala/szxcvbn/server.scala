@@ -1,3 +1,4 @@
+package szxcvbn
 
 import unfiltered.request._
 import unfiltered.response._
@@ -6,7 +7,9 @@ import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 
 class App extends unfiltered.filter.Plan {
+
   import QParams._
+
   implicit val formats = Serialization.formats(NoTypeHints)
 
   def intent = {
@@ -15,12 +18,12 @@ class App extends unfiltered.filter.Plan {
 
       val expected = for {
         password <- lookup("password") is required("password is required")
-        verbose  <- lookup("verbose") is optional[String,String]
+        verbose <- lookup("verbose") is optional[String, String]
       } yield {
         println("-> " + password.get)
         val z = szxcvbn.Zxcvbn(password.get)
 
-        val result = Map[String,Any](
+        val result = Map[String, Any](
           "score" -> z.score,
           "entropy" -> z.entropy,
           "crack_time_s" -> z.crackTime,
@@ -32,14 +35,15 @@ class App extends unfiltered.filter.Plan {
         println("<- " + response)
         JsonContent ~> ResponseString(response)
       }
-      expected(params) orFail { fails =>
-        Json(("error" -> fails.mkString(" ")))
+      expected(params) orFail {
+        fails =>
+          Json(("error" -> fails.mkString(" ")))
       }
   }
 
 }
 
-object SzxcvbnServer {
+object Server {
   val resources = new java.net.URL(getClass.getResource("/web/robots.txt"), ".")
 
   def main(args: Array[String]) {

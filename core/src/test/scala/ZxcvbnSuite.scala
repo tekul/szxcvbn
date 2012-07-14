@@ -109,10 +109,13 @@ class ZxcvbnSuite extends FunSuite with ShouldMatchers {
     z.entropy should be (34.39 plusOrMinus(E))
   }
 
-  test("'coRrecth0rseba++ery9.23.2007staple$' has entropy 66.018") {
-    pending
+  test("'coRrecth0rseba++ery9.23.2007staple$' has entropy 65.435") {
     var z = Zxcvbn("coRrecth0rseba++ery9.23.2007staple$")
-    z.entropy should be (66.018 plusOrMinus E)
+
+    z.matches.length should be(5)
+    // zxcvbn actually gets this as 66.018
+    // because it records staple$ as having two l33t sub chars (it includes the initial s)
+    z.entropy should be (65.435 plusOrMinus E)
   }
 
   import org.scalatest.prop.TableDrivenPropertyChecks._

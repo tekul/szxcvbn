@@ -17,7 +17,7 @@ object SzxcvbnBuild extends Build {
 
   val buildSettings = Defaults.defaultSettings ++ Seq (
     organization := "eu.tekul",
-    scalaVersion := "2.9.2",
+    scalaVersion := "2.9.1",
     version      := "0.2-SNAPSHOT",
     crossScalaVersions := Seq("2.8.2", "2.9.2")
   )
@@ -45,7 +45,7 @@ object SzxcvbnBuild extends Build {
   lazy val server = Project("server",
     file("server"), 
     settings = buildSettings ++  Seq(
-      mainClass in Compile := Some("SzxcvbnServer"),
+      mainClass in Compile := Some("szxcvbn.Server"),
       publishArtifact := false,
       libraryDependencies ++= uf
     ) //++ packageDistSettings

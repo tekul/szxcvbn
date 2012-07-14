@@ -2,7 +2,7 @@ package szxcvbn
 
 import szxcvbn.Predef._
 
-class Regex(p: String) extends scala.util.matching.Regex(p) {
+class Rx(p: String) extends scala.util.matching.Regex(p) {
   def matches(s: String) = pattern.matcher(s).matches()
 }
 
@@ -11,8 +11,8 @@ class Regex(p: String) extends scala.util.matching.Regex(p) {
  */
 object Entropy {
 
-  val AllLower = new Regex("^[^A-Z]+$")
-  val SimpleCapitalization = new Regex("^([A-Z][^A-Z]+)|([^a-z]+)|([^A-Z]+[A-Z])$")
+  val AllLower = new Rx("^[^A-Z]+$")
+  val SimpleCapitalization = new Rx("^([A-Z][^A-Z]+)|([^a-z]+)|([^A-Z]+[A-Z])$")
 
   def extraUpperCaseEntropy(word: String): Double = {
     if (AllLower.matches(word))

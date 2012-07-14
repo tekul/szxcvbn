@@ -160,4 +160,157 @@ class MatchingSpec extends FunSpec with GivenWhenThen {
       assert(matches(0).turns === 5)
     }
   }
+
+  describe ("A digits matcher") {
+
+    it ("should match digit sequences of 3 or more characters") {
+      given("a digits matcher")
+
+      when("it tests the string 'abc20176hj984182a3'")
+      var matches = DigitsMatcher.matches("abc20176hj984182a3")
+
+      then("it should find two matches")
+      assert(matches.size === 2)
+      assert(matches(0).token === "20176")
+      assert(matches(0).start === 3)
+      assert(matches(0).end === 7)
+    }
+
+    it ("should match 4 digit years") {
+      given("a digits matcher")
+
+      when("it tests the string 'abc1988g2012'")
+      var matches = DigitsMatcher.matches("abc1988g2012")
+
+      then("it should find two year matches")
+      assert(matches.size === 2)
+      matches(0) match {
+        case YearMatch(_, _, year) => assert(year === "1988")
+        case _ => fail("Not a year")
+      }
+      matches(1) match {
+        case YearMatch(_, _, year) => assert(year === "2012")
+        case _ => fail("Not a year")
+      }
+    }
+
+    it ("should match 4 digit dates") {
+      given("a digits matcher")
+
+      when("it tests the string 'abc8821_0405_9401_1009'")
+      var matches = DigitsMatcher.matches("abc8821_0405_9401_1009")
+
+      then("it should find 4 matches")
+      assert(matches.size === 4)
+
+      and("two of them should be date matches")
+      matches(0) match {
+        case DateMatch(_, _, t, year, _) =>
+          assert(year === 21)
+          assert(t === "8821")
+        case _ => fail("Not a date")
+      }
+
+      matches(2) match {
+        case DateMatch(_, _, t, year, _) =>
+          assert(year === 1)
+          assert(t === "9401")
+        case _ => fail("Not a date")
+      }
+
+      assert(matches(1).isInstanceOf[DigitsMatch])
+      assert(matches(3).isInstanceOf[DigitsMatch])
+    }
+
+    it ("should match 5 digit dates") {
+      given("a digits matcher")
+
+      when("it tests the string 'abc23459_01008_76932_31120'")
+      var matches = DigitsMatcher.matches("abc23459_01008_76932_31120")
+
+      then("it should find 4 matches")
+      assert(matches.size === 4)
+
+      and("'23459' should be a date match")
+      matches(0) match {
+        case DateMatch(_, _, t, year, _) =>
+          assert(year === 59)
+          assert(t === "23459")
+        case _ => fail("Not a date")
+      }
+
+      and("'31120' should be a date match")
+      matches(3) match {
+        case DateMatch(_, _, t, year, _) =>
+          assert(year === 20)
+          assert(t === "31120")
+        case _ => fail("Not a date")
+      }
+
+      and("the others should be digit matches")
+      assert(matches(1).isInstanceOf[DigitsMatch])
+      assert(matches(2).isInstanceOf[DigitsMatch])
+    }
+
+    it ("should match 6 digit dates") {
+      given("a digits matcher")
+
+      when("it tests the string 'abc200159_01008_76932_001231'")
+      var matches = DigitsMatcher.matches("abc200159_597099_76932_001231")
+
+      then("it should find 4 matches")
+      assert(matches.size === 4)
+
+      and("'592001' should be a date")
+      matches(0) match {
+        case DateMatch(_, _, t, year, _) =>
+          assert(year === 59)
+          assert(t === "200159")
+        case _ => fail("Not a date")
+      }
+
+      and("'001231' should be a date")
+      matches(3) match {
+        case DateMatch(_, _, t, year, _) =>
+          assert(year === 0)
+          assert(t === "001231")
+        case _ => fail("Not a date")
+      }
+
+      and("the others should be digit matches")
+      assert(matches(1).isInstanceOf[DigitsMatch])
+      assert(matches(2).isInstanceOf[DigitsMatch])
+    }
+
+    it ("should match 8 digit dates") {
+      given("a digits matcher")
+
+      when("it tests the string 'a20011509_19051947_76322304_00012001'")
+      var matches = DigitsMatcher.matches("a20011509_19051947_76322304_00012001")
+
+      then("it should find 4 matches")
+      assert(matches.size === 4)
+
+      and("'20011509' should be a date")
+      matches(0) match {
+        case DateMatch(_, _, t, year, _) =>
+          assert(year === 2001)
+          assert(t === "20011509")
+        case _ => fail("Not a date")
+      }
+
+      and("'19051947' should be a date")
+      matches(1) match {
+        case DateMatch(_, _, t, year, _) =>
+          assert(year === 1947)
+          assert(t === "19051947")
+        case _ => fail("Not a date")
+      }
+
+      and("the others should be digit matches")
+      assert(matches(2).isInstanceOf[DigitsMatch])
+      assert(matches(3).isInstanceOf[DigitsMatch])
+    }
+  }
+
 }

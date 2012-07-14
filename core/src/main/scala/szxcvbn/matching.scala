@@ -3,6 +3,7 @@ package szxcvbn
 import scala.math._
 import szxcvbn.Predef._
 import Entropy._
+import scala.util.matching.Regex
 
 sealed trait Match {
   /**
@@ -72,6 +73,26 @@ final case class BruteForceMatch(start: Int, end: Int, token: String, cardinalit
 
 final case class SpatialMatch(start: Int, end: Int, token: String, name: String, entropy: Double, turns: Int, shiftedCount: Int) extends Match {
   val pattern = "spatial"
+}
+
+final case class DigitsMatch(start: Int, end: Int, token: String) extends Match {
+  val pattern = "digits"
+  val entropy = log2(math.pow(10, token.length))
+}
+
+final case class YearMatch(start: Int, end: Int, token: String) extends Match {
+  private val NumYears = 119 // years match against 1900 - 2019
+
+  val pattern = "year"
+  val entropy = log2(NumYears)
+}
+
+final case class DateMatch(start: Int, end: Int, token: String, year: Int, separator: Boolean = false) extends Match {
+  private val TwoDigitYearEntropy = log2(31 * 12 * 100)
+  private val FourDigitYearEntropy = log2(31 * 12 * 119)
+
+  val pattern = "date"
+  val entropy = (if (year < 100) TwoDigitYearEntropy else FourDigitYearEntropy) + (if (separator) 2 else 0)
 }
 
 trait Matcher[+A <: Match] {
@@ -217,7 +238,6 @@ final case class SpatialMatcher(graph: AdjacencyGraph) extends Matcher[SpatialMa
     else (pos, turns, shiftedCount)
 }
 
-
 final case class L33tMatcher(matchers: List[DictMatcher]) extends Matcher[L33tMatch]  {
 
   val L33tTable = Map(
@@ -314,4 +334,98 @@ final case class L33tMatcher(matchers: List[DictMatcher]) extends Matcher[L33tMa
     sb
   }
 
+}
+
+object DateChecker {
+  private val Exp10 = Seq(1,10,100,1000,10000,100000,1000000)
+
+  def valid2DigitYearDate(n: Int, l: Int): Option[Int] = {
+    if (l > 6)
+      None
+    else {
+      if (validDm(n / 100, l-2)) Some(n % 100) // year suffix
+      else if (validDm(n % Exp10(l-2), l-2)) Some(n / Exp10(l-2)) // year prefix
+      else None
+    }
+  }
+
+  def valid4DigitYearDate(n: Int, l: Int): Option[Int] = {
+    if (l < 6 || l > 8) None
+    else {
+      if (validDm(n / 10000, l-4) && valid4DgtYr(n % 10000)) Some(n % 10000)
+      else if (validDm(n % Exp10(l-4), l-4) &&  valid4DgtYr(n / Exp10(l-4))) Some(n / Exp10(l-4))
+      else None
+    }
+  }
+
+  def valid4DgtYr(y: Int) = y >= 1900 && y < 2020
+
+  def valid2DgtYr(y: Int) = y < 100
+
+  def validDm(dm: Int, length: Int): Boolean =
+    length match {
+      case 2 => validDayMonth(dm/10, dm % 10)
+      case 3 => validDayMonth(dm/10, dm % 10) || validDayMonth(dm/100, dm % 100)
+      case 4 => validDayMonth(dm/100, dm % 100)
+      case _ => false
+    }
+
+  def validDayMonth(day: Int, month: Int): Boolean =
+    (month <= 12 && day <= 31 || day <= 12 && month <= 31) && day * month > 0
+}
+
+import DateChecker._
+
+/**
+ * Matches sequences of 3 or more digits.
+ *
+ * Those which are valid dates or years will be returned as specific match types with lower entropy.
+ */
+object DigitsMatcher extends Matcher[Match] {
+  private val Digits = "\\d{3,}".r
+
+  def matches(password: String) = Digits.findAllIn(password).matchData.map {
+    m => doMatch(m.start, m.end-1, m.matched)
+  }.toList
+
+  def doMatch(start: Int, end: Int, token: String): Match =
+    (if (token.length >= 4 && token.length <= 8) {
+      // Check whether it can be a date
+      val n = token.toInt
+
+      if (token.length == 4 && valid4DgtYr(n))
+        Some(YearMatch(start, end, token))
+      else
+        valid2DigitYearDate(n, token.length) orElse valid4DigitYearDate(n, token.length) map { DateMatch(start, end, token, _) }
+    } else None).getOrElse(DigitsMatch(start, end, token))
+}
+
+/**
+ * Matches dates with separators
+ */
+object DateMatcher extends Matcher[DateMatch] {
+  val DateYearSuffix = """(\d{1,2})(\s|-|/|\\|\.)(\d{1,2})\2(19\d{2}|200\d|201\d|\d{2})""".r
+  val DateYearPrefix = """(19\d{2}|200\d|201\d|\d{2})(\s|-|/|\\|\.)(\d{1,2})\2(\d{1,2})""".r
+
+  def matches(password: String) = {
+    val matches = (DateYearSuffix.findAllIn(password).matchData ++
+      DateYearSuffix.findAllIn(password).matchData).toSeq
+    val dates = matches.collect(validDate).toList
+    dates
+  }
+
+  private val validDate: PartialFunction[Regex.Match, DateMatch] = {
+    case ValidDate(d)  => d
+  }
+
+  private object ValidDate {
+      def unapply(m: Regex.Match): Option[DateMatch] = {
+        val (day,month,year) = (m.group(1).toInt, m.group(3).toInt, m.group(4).toInt)
+        if ((valid4DgtYr(year) || valid2DgtYr(year)) && validDayMonth(day, month))
+          Some(DateMatch(m.start, m.end-1, m.matched, year, true))
+        else if ((valid4DgtYr(day) || valid2DgtYr(day)) && validDayMonth(year, month))
+          Some(DateMatch(m.start, m.end-1, m.matched, day, true))
+        else None
+      }
+  }
 }
