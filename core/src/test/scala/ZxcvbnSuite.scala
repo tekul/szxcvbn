@@ -109,13 +109,17 @@ class ZxcvbnSuite extends FunSuite with ShouldMatchers {
     z.entropy should be (34.39 plusOrMinus(E))
   }
 
-  test("'coRrecth0rseba++ery9.23.2007staple$' has entropy 65.435") {
+  test("'coRrecth0rseba++ery9.23.2007staple$' has entropy 66.018") {
+    Zxcvbn("coRrect").entropy should be(13.574 plusOrMinus E)
+    Zxcvbn("h0rse").entropy should be(9.948 plusOrMinus E)
+    Zxcvbn("ba++ery").entropy should be(12.908 plusOrMinus E)
+    Zxcvbn("9.23.2007").entropy should be(17.434 plusOrMinus E)
+    Zxcvbn("staple$").entropy should be(12.1519 plusOrMinus E)
+
     var z = Zxcvbn("coRrecth0rseba++ery9.23.2007staple$")
 
     z.matches.length should be(5)
-    // zxcvbn actually gets this as 66.018
-    // because it records staple$ as having two l33t sub chars (it includes the initial s)
-    z.entropy should be (65.435 plusOrMinus E)
+    z.entropy should be (66.018 plusOrMinus E)
   }
 
   import org.scalatest.prop.TableDrivenPropertyChecks._
@@ -135,6 +139,7 @@ class ZxcvbnSuite extends FunSuite with ShouldMatchers {
       ("ROSEBUD", 8.937),
       ("rosebuD", 8.937),
       ("ros3bud", 8.937),
+      ("tit+erington", 17.253),
       ("(*.>ddWR%gHssT^6$h", 118.257),
       ("(*.>ddWR%gHssT^6$hvGhLz0_jw0w76£2", 201.387),
       ("(*.>ddWR%gHssT^6$hvGhLz0_jw0w76£2)(***feraQQ m\"^&ape", 294.861),

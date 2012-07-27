@@ -47,7 +47,7 @@ object Entropy {
     val possibilities = subs.foldLeft(0)((total,sub) => {
         val (nS,nU) = word.foldLeft((0,0))((acc, c) => c match {
           case sub._1 => (acc._1 + 1, acc._2)
-          case sub._2 => (acc._1 + 1, acc._2)
+          case sub._2 => (acc._1, acc._2 + 1)
           case _      => acc
         })
         total + Range.inclusive(0,  math.min(nS,nU)).foldLeft(0)(_ + nCk(nU + nS, _))
