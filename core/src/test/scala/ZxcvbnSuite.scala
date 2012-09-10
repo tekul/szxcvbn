@@ -122,6 +122,12 @@ class ZxcvbnSuite extends FunSuite with ShouldMatchers {
     z.entropy should be (66.018 plusOrMinus E)
   }
 
+  test("user data should be taken into account") {
+    var z = Zxcvbn("y67tawl-nr&ipblah", Seq("y67tawl-nr&ipblah"))
+    z.matches.length should be (1)
+    z.entropy should be (0)
+  }
+
   import org.scalatest.prop.TableDrivenPropertyChecks._
 
   // Various test data made up or taken from zxcvbn
@@ -139,6 +145,7 @@ class ZxcvbnSuite extends FunSuite with ShouldMatchers {
       ("ROSEBUD", 8.937),
       ("rosebuD", 8.937),
       ("ros3bud", 8.937),
+      ("aaaaaaaaaaaaaaAAAaaAAaAAaaAAaAaAaA", 47.098),
       ("tit+erington", 17.253),
       ("(*.>ddWR%gHssT^6$h", 118.257),
       ("(*.>ddWR%gHssT^6$hvGhLz0_jw0w76£2", 201.387),

@@ -14,16 +14,15 @@ trait Zxcvbn {
 object Zxcvbn {
   type MatcherList = List[Matcher[Match]]
 
-  def apply(password: String): Zxcvbn = {
-    val (entropy, matches) = minEntropyMatchSequence(password, allMatches(password))
+  def apply(password: String): Zxcvbn = apply(password, defaultMatchers)
+
+  def apply(password: String, ud: Seq[String]): Zxcvbn = apply(password, DictMatcher("user_data", ud.map(_.toLowerCase)) :: defaultMatchers)
+
+  def apply(password: String, matchers: MatcherList): Zxcvbn = {
+    val allMatches = doMatch(password, matchers).sortWith((m1,m2) => m1 < m2)
+    val (entropy, matches) = minEntropyMatchSequence(password, allMatches)
     new ZxcvbnImpl(password, entropy, matches)
   }
-
-  def allMatches(password: String, userData: Option[Seq[String]] = None) =
-    (userData match {
-      case Some(ud) => doMatch(password, DictMatcher("user_data", ud) :: defaultMatchers)
-      case None => doMatch(password, defaultMatchers)
-    }).sortWith((m1,m2) => m1 < m2)
 
   private def doMatch(word: String, matchers: MatcherList): List[Match] = matchers match {
     case List(m) => m.matches(word)
