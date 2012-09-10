@@ -18,12 +18,12 @@ object SzxcvbnBuild extends Build {
   val buildSettings = Defaults.defaultSettings ++ Seq (
     organization := "eu.tekul",
     scalaVersion := "2.9.1",
-    version      := "0.2-SNAPSHOT",
+    version      := "0.2",
     crossScalaVersions := Seq("2.8.2", "2.9.2")
   )
 
   lazy val szxcvbn = Project("root",
-    file("."), 
+    file("."),
     settings = buildSettings ++ Seq(publishArtifact := false)
   ) aggregate (core, server)
 
@@ -41,9 +41,9 @@ object SzxcvbnBuild extends Build {
 //      files => files.filter(f => !f.getName.contains("-javadoc") && !f.getName.contains("-sources") && !f.getName.startsWith("scala-compiler"))
 //    }
 //  )
-  
+
   lazy val server = Project("server",
-    file("server"), 
+    file("server"),
     settings = buildSettings ++  Seq(
       mainClass in Compile := Some("szxcvbn.Server"),
       publishArtifact := false,
