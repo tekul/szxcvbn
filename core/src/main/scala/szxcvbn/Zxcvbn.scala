@@ -19,8 +19,9 @@ object Zxcvbn {
 //  def apply(password: String, ud: Seq[String]): Zxcvbn = apply(password, DictMatcher("user_data", ud.map(_.toLowerCase)) :: defaultMatchers)
 
   def apply(password: String, matchers: MatcherList): Zxcvbn = {
-    val allMatches = doMatch(password, matchers).sortWith((m1,m2) => m1 < m2)
-    val (entropy, matches) = minEntropyMatchSequence(password, allMatches)
+    val nPassword = Normalizer.normalize(password)
+    val allMatches = doMatch(nPassword, matchers).sortWith((m1,m2) => m1 < m2)
+    val (entropy, matches) = minEntropyMatchSequence(nPassword, allMatches)
     new ZxcvbnImpl(password, entropy, matches)
   }
 
@@ -127,6 +128,48 @@ object Zxcvbn {
   def crackTimeToScore(t: Double) = ScoreIntervals.indexWhere(_ > t) match {
     case -1 => 10 // We have a HUGE crack-time, so give it maximum score
     case  s => s
+  }
+}
+
+object Normalizer {
+  // Normalization
+  private val diacriticsEtc = java.util.regex.Pattern.compile("[\\p{InCombiningDiacriticalMarks}\\p{IsLm}\\p{IsSk}]+")
+
+  def normalize(str: String) = {
+    // Pick out diacritics which are already there
+    val normalized = diacriticsEtc.matcher(java.text.Normalizer.normalize(str, java.text.Normalizer.Form.NFD)).replaceAll("")
+
+    if (normalized.length != str.length) {
+      // Original string contained accents, create a version without them
+      val stripped = diacriticsEtc.matcher(str).replaceAll("")
+      val result = new StringBuilder(str.length)
+
+      assert (normalized.length == stripped.length)
+
+      var accents = 0 // number of extra chars in the original string which we've added in
+      var i = 0
+
+      while (i < stripped.length) {
+        if (str.charAt(i + accents) != stripped.charAt(i)) {
+          result.append(str.charAt(i + accents))
+          accents += 1
+        } else {
+          result.append(normalized.charAt(i))
+          i += 1
+        }
+      }
+
+      i += accents
+
+      while (i < str.length) {
+        result.append(str.charAt(i))
+        i += 1
+      }
+
+      // Todo. Add other non-diacritic character substitutions
+      result.toString()
+
+    } else normalized
   }
 }
 

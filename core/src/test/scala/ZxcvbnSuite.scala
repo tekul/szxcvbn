@@ -159,4 +159,16 @@ class ZxcvbnSuite extends FunSuite with ShouldMatchers {
       Zxcvbn(password).entropy should be (entropy plusOrMinus(0.05))
     }
   }
+
+  test("Normalization works") {
+    import Normalizer._
+    assert("muller" === normalize("müller"))
+    assert("mu^ller" === normalize("mü^ller"))
+    assert("对马电池钉书针" === normalize("对马电池钉书针"))
+    assert("^^naca+-_ca^.iapa^" === normalize("^^ñacä+-_çå^.îâpã^"))
+  }
+
+  test("Diacritics are removed before match (müller/muller)") {
+    assert(Zxcvbn("müller").entropy === Zxcvbn("muller").entropy)
+  }
 }
