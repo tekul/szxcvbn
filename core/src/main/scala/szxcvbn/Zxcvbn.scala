@@ -12,17 +12,19 @@ trait Zxcvbn {
 }
 
 object Zxcvbn {
-  type MatcherList = List[Matcher[Match]]
+  type MatcherList = Seq[Matcher[Match]]
 
   def apply(password: String): Zxcvbn = apply(password, defaultMatchers)
 
-  def apply(password: String, ud: Seq[String]): Zxcvbn = apply(password, DictMatcher("user_data", ud.map(_.toLowerCase)) :: defaultMatchers)
+//  def apply(password: String, ud: Seq[String]): Zxcvbn = apply(password, DictMatcher("user_data", ud.map(_.toLowerCase)) :: defaultMatchers)
 
   def apply(password: String, matchers: MatcherList): Zxcvbn = {
     val allMatches = doMatch(password, matchers).sortWith((m1,m2) => m1 < m2)
     val (entropy, matches) = minEntropyMatchSequence(password, allMatches)
     new ZxcvbnImpl(password, entropy, matches)
   }
+
+  def createMatcher(name: String, wordList: Seq[String]): Matcher[Match] = DictMatcher(name, wordList.map(_.toLowerCase))
 
   private def doMatch(word: String, matchers: MatcherList): List[Match] = matchers match {
     case List(m) => m.matches(word)

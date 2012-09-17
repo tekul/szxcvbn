@@ -123,7 +123,8 @@ class ZxcvbnSuite extends FunSuite with ShouldMatchers {
   }
 
   test("user data should be taken into account") {
-    var z = Zxcvbn("y67tawl-nr&ipblah", Seq("y67tawl-nr&ipblah"))
+    val matchers = Seq(createMatcher("user-data", Seq("y67tawl-nr&ipblah"))) ++ defaultMatchers
+    var z = Zxcvbn("y67tawl-nr&ipblah", matchers)
     z.matches.length should be (1)
     z.entropy should be (0)
   }
