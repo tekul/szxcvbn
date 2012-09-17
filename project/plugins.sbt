@@ -1,5 +1,3 @@
-// addSbtPlugin("com.twitter" %% "sbt-package-dist" % "1.0.6-SNAPSHOT")
-
 resolvers += "Local Maven Repository" at "file://"+Path.userHome+"/.m2/repository"
 
-// resolvers += "twitter-repo" at "http://maven.twttr.com"
+addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.6.0")

@@ -1,6 +1,6 @@
 ---
 applications:
-  dist/szxcvbn-server.zip:
+  server.zip:
     name: szxcvbn
     framework:
       name: standalone
@@ -9,7 +9,7 @@ applications:
         description: Standalone Application
         exec:
     runtime: java
-    command: java $JAVA_OPTS -jar server_2.9.2-0.1-SNAPSHOT.jar
+    command: java $JAVA_OPTS -jar server_2.9.2-0.3-SNAPSHOT.jar
     url: szxcvbn.${target-base}
     mem: 512M
     instances: 1

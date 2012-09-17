@@ -2,11 +2,12 @@ package szxcvbn
 
 import unfiltered.request._
 import unfiltered.response._
+import unfiltered.netty._
 
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 
-class App extends unfiltered.filter.Plan {
+object App extends cycle.Plan with cycle.SynchronousExecution with ServerErrorResponse {
 
   import QParams._
 
@@ -48,8 +49,8 @@ object Server {
 
   def main(args: Array[String]) {
     println("Port is: " + System.getenv("VCAP_APP_PORT"))
-    val http = unfiltered.jetty.Http(Option(System.getenv("VCAP_APP_PORT")).getOrElse("8080").toInt)
+    val http = unfiltered.netty.Http(Option(System.getenv("VCAP_APP_PORT")).getOrElse("8080").toInt)
       .resources(resources)
-      .filter(new App).run()
+      .handler(App).run()
   }
 }
