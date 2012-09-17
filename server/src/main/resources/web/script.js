@@ -5,12 +5,14 @@ $(document).ready(function() {
 
     var check = function() {
         var pwd = passwordInput.val();
+        var meter = document.getElementById('meter');
 
-        if (pwd.length == 0) {
+        if (pwd.length < 4) {
             $('#score').empty().append("Score: 0");
             $('#entropy').empty().append("Entropy: 0");
             $('#cracktime_s').empty().append("Crack time (s): 0");
             $('#cracktime').empty().append("Crack time: instant");
+            meter.style.width = "0px";
             return;
         }
 
@@ -29,6 +31,7 @@ $(document).ready(function() {
             $('#entropy').empty().append("Entropy: " + data.entropy.toFixed(2));
             $('#cracktime_s').empty().append("Crack time (s): " + data.crack_time_s.toFixed(2));
             $('#cracktime').empty().append("Crack time: " + data.crack_time);
+            meter.style.width = data.score * 10 + "%";
 
         }).fail(function(xhr, err) {
             console.log("readyState: " + xhr.readyState + "\nstatus: " + xhr.status);
