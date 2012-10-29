@@ -46,5 +46,12 @@ object SzxcvbnBuild extends Build {
       publishArtifact := false,
       libraryDependencies ++= uf
     ) ++ cfAppSettings
-  ) dependsOn(core)
+  ) dependsOn core
+
+  import BenchmarkPlugin._
+
+  lazy val benchmark = Project("benchmark",
+    file("benchmark"), settings = buildSettings ++ benchmarkSettings ++ Seq(publishArtifact := false)) dependsOn core
+
+
 }
