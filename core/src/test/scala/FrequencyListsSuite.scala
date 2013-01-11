@@ -15,9 +15,9 @@ class FrequencyListsSuite extends FunSuite {
 
   test("Lists do not overlap") {
     val engSet = english.toSet
-    assert(passwords.toSet ** engSet === Set())
-    assert(maleNames.toSet ** engSet === Set())
-    assert(femaleNames.toSet ** engSet === Set())
-    assert(surnames.toSet ** engSet === Set())
+    assert(passwords.toSet.intersect(engSet) === Set())
+    assert(maleNames.toSet.intersect(engSet) === Set())
+    assert(femaleNames.toSet.intersect(engSet) === Set())
+    assert(surnames.toSet.intersect(engSet) === Set())
   }
 }

@@ -3,18 +3,19 @@ import Keys._
 
 
 object SzxcvbnBuild extends Build {
-  val scalaTest  = "org.scalatest" %% "scalatest" % "1.8" % "test"
+  val scalaTest  = "org.scalatest" %% "scalatest" % "1.9.1" % "test"
 
-  val ufversion = "0.6.4"
+  val ufversion = "0.6.5"
   val uf = Seq(
     "net.databinder" %% "unfiltered-filter" % ufversion,
-    "net.databinder" %% "unfiltered-json" % ufversion,
     "net.databinder" %% "unfiltered-netty-server" % ufversion
   )
 
+  val spray = "io.spray" %%  "spray-json" % "1.2.3"
+
   val buildSettings = Defaults.defaultSettings ++ Seq (
     organization := "eu.tekul",
-    scalaVersion := "2.9.2",
+    scalaVersion := "2.10.0",
     version      := "0.3-SNAPSHOT",
     crossScalaVersions := Seq("2.8.2", "2.9.2")
   ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
@@ -44,7 +45,8 @@ object SzxcvbnBuild extends Build {
     settings = buildSettings ++ Seq(
       mainClass in Compile := Some("szxcvbn.Server"),
       publishArtifact := false,
-      libraryDependencies ++= uf
+      resolvers += "io.spray" at "http://repo.spray.io/",
+      libraryDependencies ++= uf ++ Seq(spray)
     ) ++ cfAppSettings
   ) dependsOn core
 
