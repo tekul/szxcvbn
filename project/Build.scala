@@ -53,7 +53,14 @@ object SzxcvbnBuild extends Build {
   import BenchmarkPlugin._
 
   lazy val benchmark = Project("benchmark",
-    file("benchmark"), settings = buildSettings ++ benchmarkSettings ++ Seq(publishArtifact := false)) dependsOn core
+    file("benchmark"),
+    settings = buildSettings ++ benchmarkSettings ++ Seq(
+      publishArtifact := false,
+      libraryDependencies += "com.github.axel22" %% "scalameter" % "0.2",
+      testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
+      logBuffered := false
+    )
+  ) dependsOn core
 
 
 }

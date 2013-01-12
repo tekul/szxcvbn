@@ -1,3 +1,4 @@
-Benchmarking project based on the build from the [scala-benchmarking-template](https://github.com/sirthias/scala-benchmarking-template).
+Benchmarking project using [scalameter](http://axel22.github.com/scalameter/) to compare the relative cost of the
+various matching algorithms.
 
-Use sbt's `run` command.
+Use sbt's `test` command to run.
